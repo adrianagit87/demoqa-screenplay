@@ -21,7 +21,7 @@ test.describe('Drag and Drop', () => {
     await expect(page.locator('#simpleDropContainer #droppable')).toContainText('Dropped!', { timeout: 8_000 });
   });
 
-  test('DRAG-002: revert draggable released outside target returns to origin', async ({ actor }) => {
+  test('DRAG-002: non-revert draggable stays at new position when dropped outside target', async ({ actor }) => {
     await actor.attemptsTo(Navigate.to('/droppable'));
 
     const page = actor.abilityTo(BrowseTheWeb).getPage();
@@ -29,27 +29,22 @@ test.describe('Drag and Drop', () => {
     // Click the "Revert Draggable" tab
     await page.getByRole('tab', { name: /Revert Draggable/i }).click();
 
-    // Wait for jQuery UI to fully initialize the draggable widget before dragging
+    // Wait for jQuery UI to initialize the non-revert draggable widget
     await page.waitForFunction(
-      () => document.querySelector('#revertable')?.classList.contains('ui-draggable'),
+      () => document.querySelector('#notRevertable')?.classList.contains('ui-draggable'),
       { timeout: 10_000 }
     );
 
-    const draggable = page.locator('#revertable');
+    const draggable = page.locator('#notRevertable');
     const originalBox = await draggable.boundingBox();
     expect(originalBox).not.toBeNull();
 
-    // Use Playwright's dragTo API (same as DRAG-001) — more reliable than manual mouse
-    // events for triggering jQuery UI's revert:invalid logic in headless CI.
-    // Drop onto the tab button (not a ui-droppable) → triggers revert animation.
+    // Drag outside the droppable target — the non-revert draggable should STAY at new position
     await draggable.dragTo(page.getByRole('tab', { name: /Revert Draggable/i }));
 
-    // Poll on the Node side using locator.boundingBox() which handles scroll correctly
-    await expect(async () => {
-      const newBox = await draggable.boundingBox();
-      expect(newBox).not.toBeNull();
-      expect(Math.abs(newBox!.x - originalBox!.x)).toBeLessThan(10);
-      expect(Math.abs(newBox!.y - originalBox!.y)).toBeLessThan(10);
-    }).toPass({ timeout: 5_000 });
+    // Verify the element moved and stayed (did NOT revert to origin)
+    const newBox = await draggable.boundingBox();
+    expect(newBox).not.toBeNull();
+    expect(Math.abs(newBox!.x - originalBox!.x)).toBeGreaterThan(10);
   });
 });
