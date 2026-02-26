@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": "."
+  },
+  "include": [
+    "screenplay/**/*",
+    "fixtures/**/*",
+    "tests/**/*",
+    "test-data/**/*",
+    "playwright.config.ts"
+  ],
+  "exclude": ["node_modules", "dist"]
+}
