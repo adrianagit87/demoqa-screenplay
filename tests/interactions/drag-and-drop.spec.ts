@@ -28,28 +28,36 @@ test.describe('Drag and Drop', () => {
 
     // Click the "Revert Draggable" tab
     await page.getByRole('tab', { name: /Revert Draggable/i }).click();
-    await page.waitForTimeout(400);
+
+    // Wait for jQuery UI to fully initialize the draggable widget before dragging
+    await page.waitForFunction(
+      () => document.querySelector('#revertable')?.classList.contains('ui-draggable'),
+      { timeout: 10_000 }
+    );
 
     const draggable = page.locator('#revertable');
-    await draggable.waitFor({ state: 'visible' });
     const originalBox = await draggable.boundingBox();
+    expect(originalBox).not.toBeNull();
 
-    if (originalBox) {
-      const cx = originalBox.x + originalBox.width / 2;
-      const cy = originalBox.y + originalBox.height / 2;
-      await page.mouse.move(cx, cy);
-      await page.mouse.down();
-      await page.mouse.move(cx + 300, cy - 100, { steps: 15 });
-      await page.mouse.up();
-    }
+    const cx = originalBox!.x + originalBox!.width / 2;
+    const cy = originalBox!.y + originalBox!.height / 2;
 
-    // Wait for the revert animation to complete
-    await page.waitForTimeout(1000);
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    // Drop at top-left corner — far from any droppable target
+    await page.mouse.move(50, 50, { steps: 15 });
+    await page.mouse.up();
 
-    const newBox = await draggable.boundingBox();
-    if (originalBox && newBox) {
-      expect(Math.abs(newBox.x - originalBox.x)).toBeLessThan(10);
-      expect(Math.abs(newBox.y - originalBox.y)).toBeLessThan(10);
-    }
+    // Poll until the element reverts to its original position (avoids fixed timeout)
+    await page.waitForFunction(
+      (arg: { origX: number; origY: number }) => {
+        const el = document.querySelector('#revertable') as HTMLElement | null;
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        return Math.abs(rect.left - arg.origX) < 10 && Math.abs(rect.top - arg.origY) < 10;
+      },
+      { origX: originalBox!.x, origY: originalBox!.y },
+      { timeout: 5_000 }
+    );
   });
 });
