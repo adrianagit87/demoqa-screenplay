@@ -2,44 +2,44 @@
 
 [![Playwright Tests](https://github.com/adrianagit87/demoqa-screenplay/actions/workflows/playwright.yml/badge.svg)](https://github.com/adrianagit87/demoqa-screenplay/actions/workflows/playwright.yml)
 
-A QA portfolio project demonstrating the **Screenplay pattern** implemented manually with
-**Playwright + TypeScript** — no Serenity/JS or external pattern libraries.
+Proyecto de portafolio QA que demuestra el **patrón Screenplay** implementado manualmente con
+**Playwright + TypeScript** — sin Serenity/JS ni librerías externas del patrón.
 
-> **Target app:** [DemoQA](https://demoqa.com) — a public practice site with forms, widgets,
-> alerts, drag-and-drop interactions, and more.
+> **Aplicación bajo prueba:** [DemoQA](https://demoqa.com) — sitio público de práctica con formularios, widgets,
+> alertas, drag-and-drop y más.
 
 ---
 
-## Why Screenplay instead of Page Object Model?
+## ¿Por qué Screenplay en lugar de Page Object Model?
 
-| Concern | Page Object Model (POM) | Screenplay Pattern |
+| Aspecto | Page Object Model (POM) | Patrón Screenplay |
 |---|---|---|
-| Encapsulates | *Where* elements live | *Who does what* |
-| Main abstraction | Page Object class | Actor + Abilities |
-| Reuse unit | Method on a page class | Interaction / Task |
-| Composability | Low — tied to page hierarchy | High — any actor can reuse any interaction |
-| Readability | `loginPage.submit()` | `actor.attemptsTo(Click.on('#submit'))` |
-| Test coupling | High — tests depend on page class internals | Low — tests read like plain English |
+| Encapsula | *Dónde* viven los elementos | *Quién hace qué* |
+| Abstracción principal | Clase Page Object | Actor + Abilities |
+| Unidad de reutilización | Método en una clase de página | Interaction / Task |
+| Composabilidad | Baja — atada a la jerarquía de páginas | Alta — cualquier actor puede reutilizar cualquier interacción |
+| Legibilidad | `loginPage.submit()` | `actor.attemptsTo(Click.on('#submit'))` |
+| Acoplamiento del test | Alto — los tests dependen de los internos de la clase de página | Bajo — los tests se leen como lenguaje natural |
 
-POM answers: *"where is this element?"*
-Screenplay answers: *"who does this action, and how?"*
+POM responde: *"¿dónde está este elemento?"*
+Screenplay responde: *"¿quién realiza esta acción y cómo?"*
 
 ---
 
-## Project structure
+## Estructura del proyecto
 
 ```
 demoqa-screenplay/
 ├── screenplay/
-│   ├── core/           # Actor, Ability, Interaction, Task, Question interfaces
-│   ├── abilities/      # BrowseTheWeb — wraps Playwright Page
-│   ├── interactions/   # Atomic UI actions (Click, Type, Navigate, …)
-│   ├── questions/      # Read UI state (Text, Visibility, IsChecked, …)
-│   └── tasks/          # High-level business tasks (FillPracticeForm, AddTableRecord, …)
+│   ├── core/           # Actor, Ability, Interaction, Task, Question (interfaces base)
+│   ├── abilities/      # BrowseTheWeb — envuelve Playwright Page
+│   ├── interactions/   # Acciones atómicas de UI (Click, Type, Navigate, …)
+│   ├── questions/      # Lectura del estado de la UI (Text, Visibility, IsChecked, …)
+│   └── tasks/          # Tareas de negocio de alto nivel (FillPracticeForm, AddTableRecord, …)
 ├── fixtures/
-│   └── actor.fixture.ts  # Playwright test.extend — injects Actor into every test
+│   └── actor.fixture.ts  # Playwright test.extend — inyecta el Actor en cada test
 ├── test-data/
-│   └── form-data.ts      # Centralised test data
+│   └── form-data.ts      # Datos de prueba centralizados
 ├── tests/
 │   ├── elements/         # text-box, check-box, radio-button, web-tables
 │   ├── forms/            # practice-form
@@ -51,19 +51,19 @@ demoqa-screenplay/
 
 ---
 
-## Pattern building blocks
+## Bloques del patrón
 
-| Building block | Interface | Role |
+| Bloque | Interfaz | Rol |
 |---|---|---|
-| **Actor** | `Actor` class | The "who" — carries abilities, attempts interactions |
-| **Ability** | `Ability` | Grants access to a system (browser, API, database) |
-| **Interaction** | `Interaction` | A single atomic UI step (`Click`, `Type`, `Navigate`) |
-| **Task** | `Task` | A sequence of interactions forming a business action |
-| **Question** | `Question<T>` | Reads state from the UI without side effects |
+| **Actor** | Clase `Actor` | El "quién" — lleva las abilities e intenta interacciones |
+| **Ability** | `Ability` | Otorga acceso a un sistema (navegador, API, base de datos) |
+| **Interaction** | `Interaction` | Un paso atómico de UI (`Click`, `Type`, `Navigate`) |
+| **Task** | `Task` | Una secuencia de interacciones que forma una acción de negocio |
+| **Question** | `Question<T>` | Lee el estado de la UI sin efectos secundarios |
 
 ---
 
-## Code example — POM vs Screenplay side by side
+## Ejemplo de código — POM vs Screenplay
 
 ### Page Object Model
 
@@ -98,14 +98,14 @@ test('login', async ({ actor }) => {
 });
 ```
 
-The Screenplay version reads like a user story. New interactions (`Type`, `Click`) are reusable
-across *any* test — no duplication in page classes.
+La versión Screenplay se lee como una historia de usuario. Las interacciones (`Type`, `Click`) son
+reutilizables en *cualquier* test — sin duplicación en clases de página.
 
 ---
 
-## Test coverage (20 tests)
+## Cobertura de pruebas (20 tests)
 
-| File | Cases |
+| Archivo | Casos |
 |---|---|
 | `elements/text-box.spec.ts` | TEXT-001..003 |
 | `elements/check-box.spec.ts` | CHECK-001..003 |
@@ -117,39 +117,39 @@ across *any* test — no duplication in page classes.
 
 ---
 
-## Getting started
+## Cómo ejecutar
 
 ```bash
-# 1. Clone and install
-git clone https://github.com/<your-username>/demoqa-screenplay.git
+# 1. Clonar e instalar dependencias
+git clone https://github.com/adrianagit87/demoqa-screenplay.git
 cd demoqa-screenplay
 npm install
 npx playwright install chromium
 
-# 2. Run all tests
+# 2. Ejecutar todos los tests
 npm test
 
-# 3. Run a specific suite
+# 3. Ejecutar una suite específica
 npm run test:elements
 npm run test:forms
 npm run test:alerts
 npm run test:interactions
 
-# 4. Open HTML report
+# 4. Abrir el reporte HTML
 npm run test:report
 ```
 
 ---
 
-## Configuration
+## Configuración
 
-`playwright.config.ts` uses a single Chromium worker (`workers: 1`) to avoid rate-limiting from
-the public DemoQA server. Ad domains are blocked inside `actor.fixture.ts` using `page.route` to
-prevent ad overlays from blocking clicks.
+`playwright.config.ts` usa un único worker de Chromium (`workers: 1`) para evitar rate-limiting
+del servidor público de DemoQA. Los dominios de publicidad se bloquean dentro de `actor.fixture.ts`
+mediante `page.route` para impedir que los overlays de anuncios interfieran con los clicks.
 
 ---
 
-## Related project
+## Proyecto relacionado
 
-[restful-booker-tests](https://github.com/<your-username>/restful-booker-tests) — the companion
-portfolio project using the **Page Object Model** pattern on a REST API + UI target.
+[restful-booker-tests](https://github.com/adrianagit87/restful-booker-tests) — proyecto de portafolio
+complementario que utiliza el patrón **Page Object Model** sobre una aplicación REST API + UI.
