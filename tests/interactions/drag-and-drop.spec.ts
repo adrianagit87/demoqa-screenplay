@@ -39,25 +39,17 @@ test.describe('Drag and Drop', () => {
     const originalBox = await draggable.boundingBox();
     expect(originalBox).not.toBeNull();
 
-    const cx = originalBox!.x + originalBox!.width / 2;
-    const cy = originalBox!.y + originalBox!.height / 2;
+    // Use Playwright's dragTo API (same as DRAG-001) — more reliable than manual mouse
+    // events for triggering jQuery UI's revert:invalid logic in headless CI.
+    // Drop onto the tab button (not a ui-droppable) → triggers revert animation.
+    await draggable.dragTo(page.getByRole('tab', { name: /Revert Draggable/i }));
 
-    await page.mouse.move(cx, cy);
-    await page.mouse.down();
-    // Drop at top-left corner — far from any droppable target
-    await page.mouse.move(50, 50, { steps: 15 });
-    await page.mouse.up();
-
-    // Poll until the element reverts to its original position (avoids fixed timeout)
-    await page.waitForFunction(
-      (arg: { origX: number; origY: number }) => {
-        const el = document.querySelector('#revertable') as HTMLElement | null;
-        if (!el) return false;
-        const rect = el.getBoundingClientRect();
-        return Math.abs(rect.left - arg.origX) < 10 && Math.abs(rect.top - arg.origY) < 10;
-      },
-      { origX: originalBox!.x, origY: originalBox!.y },
-      { timeout: 5_000 }
-    );
+    // Poll on the Node side using locator.boundingBox() which handles scroll correctly
+    await expect(async () => {
+      const newBox = await draggable.boundingBox();
+      expect(newBox).not.toBeNull();
+      expect(Math.abs(newBox!.x - originalBox!.x)).toBeLessThan(10);
+      expect(Math.abs(newBox!.y - originalBox!.y)).toBeLessThan(10);
+    }).toPass({ timeout: 5_000 });
   });
 });
