@@ -1,5 +1,7 @@
 # demoqa-screenplay
 
+[![Playwright Tests](https://github.com/adrianatroche/demoqa-screenplay/actions/workflows/playwright.yml/badge.svg)](https://github.com/adrianatroche/demoqa-screenplay/actions/workflows/playwright.yml)
+
 A QA portfolio project demonstrating the **Screenplay pattern** implemented manually with
 **Playwright + TypeScript** — no Serenity/JS or external pattern libraries.
 
