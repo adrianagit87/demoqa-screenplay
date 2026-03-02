@@ -1,8 +1,8 @@
 import { test, expect } from '../../fixtures/actor.fixture';
 import { Navigate } from '../../screenplay/interactions/Navigate';
+import { Click } from '../../screenplay/interactions/Click';
 import { Visibility } from '../../screenplay/questions/Visibility';
 import { Text } from '../../screenplay/questions/Text';
-import { BrowseTheWeb } from '../../screenplay/abilities/BrowseTheWeb';
 
 test.describe('Radio Button', () => {
   test.beforeEach(async ({ actor }) => {
@@ -10,9 +10,7 @@ test.describe('Radio Button', () => {
   });
 
   test('RADIO-001: clicking Yes displays "You have selected Yes"', async ({ actor }) => {
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    // Click label for Yes radio (the radio itself is hidden)
-    await page.locator('label[for="yesRadio"]').click();
+    await actor.attemptsTo(Click.on('label[for="yesRadio"]'));
 
     const successVisible = await actor.asks(Visibility.of('.mt-3'));
     expect(successVisible).toBe(true);
@@ -22,8 +20,7 @@ test.describe('Radio Button', () => {
   });
 
   test('RADIO-002: clicking Impressive displays correct confirmation text', async ({ actor }) => {
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    await page.locator('label[for="impressiveRadio"]').click();
+    await actor.attemptsTo(Click.on('label[for="impressiveRadio"]'));
 
     const successVisible = await actor.asks(Visibility.of('.mt-3'));
     expect(successVisible).toBe(true);

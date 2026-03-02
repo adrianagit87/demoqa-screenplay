@@ -1,6 +1,8 @@
 import { test, expect } from '../../fixtures/actor.fixture';
 import { Navigate } from '../../screenplay/interactions/Navigate';
 import { Click } from '../../screenplay/interactions/Click';
+import { Type } from '../../screenplay/interactions/Type';
+import { WaitFor } from '../../screenplay/interactions/WaitFor';
 import { FillPracticeForm } from '../../screenplay/tasks/FillPracticeForm';
 import { Visibility } from '../../screenplay/questions/Visibility';
 import { Text } from '../../screenplay/questions/Text';
@@ -13,14 +15,11 @@ test.describe('Practice Form', () => {
   });
 
   test('FORM-001: submit complete form and verify confirmation table', async ({ actor }) => {
-    await actor.attemptsTo(FillPracticeForm.with(practiceFormData));
-
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    // Scroll submit button into view before clicking (avoids fixed-bar overlap)
-    await page.locator('#submit').scrollIntoViewIfNeeded();
-    await actor.attemptsTo(Click.on('#submit'));
-
-    await page.locator('#example-modal-sizes-title-lg').waitFor({ state: 'visible' });
+    await actor.attemptsTo(
+      FillPracticeForm.with(practiceFormData),
+      Click.on('#submit'),
+      WaitFor.visibility('#example-modal-sizes-title-lg'),
+    );
 
     const modalVisible = await actor.asks(Visibility.of('.modal-content'));
     expect(modalVisible).toBe(true);
@@ -37,33 +36,28 @@ test.describe('Practice Form', () => {
         lastName: 'Required',
         gender: 'Male',
         mobile: '0987654321',
-      })
+      }),
+      Click.on('#submit'),
+      WaitFor.visibility('#example-modal-sizes-title-lg'),
     );
-
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    await page.locator('#submit').scrollIntoViewIfNeeded();
-    await actor.attemptsTo(Click.on('#submit'));
-
-    await page.locator('#example-modal-sizes-title-lg').waitFor({ state: 'visible' });
 
     const modalVisible = await actor.asks(Visibility.of('.modal-content'));
     expect(modalVisible).toBe(true);
   });
 
   test('FORM-003: submit without first name fails validation', async ({ actor }) => {
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    await page.locator('#lastName').fill('NoFirst');
-    await page.locator('input[name="gender"][value="Male"] + label').click();
-    await page.locator('#userNumber').fill('1234567890');
+    await actor.attemptsTo(
+      Type.into('#lastName', 'NoFirst'),
+      Click.on('input[name="gender"][value="Male"] + label'),
+      Type.into('#userNumber', '1234567890'),
+      Click.on('#submit'),
+    );
 
-    await page.locator('#submit').scrollIntoViewIfNeeded();
-    await actor.attemptsTo(Click.on('#submit'));
-
-    // Modal should NOT appear
     const modalVisible = await actor.asks(Visibility.of('.modal-content'));
     expect(modalVisible).toBe(false);
 
-    // DemoQA applies Bootstrap's is-invalid class to required fields on failed submit
+    // page.evaluate() is used here for DOM inspection — no Screenplay interaction involved
+    const page = actor.abilityTo(BrowseTheWeb).getPage();
     const isInvalid = await page.locator('#firstName').evaluate(
       el => el.classList.contains('field-error') || el.classList.contains('is-invalid') || el.getAttribute('required') !== null
     );
@@ -71,17 +65,18 @@ test.describe('Practice Form', () => {
   });
 
   test('FORM-004: submit without mobile fails validation', async ({ actor }) => {
-    const page = actor.abilityTo(BrowseTheWeb).getPage();
-    await page.locator('#firstName').fill('NoPhone');
-    await page.locator('#lastName').fill('Test');
-    await page.locator('input[name="gender"][value="Female"] + label').click();
-
-    await page.locator('#submit').scrollIntoViewIfNeeded();
-    await actor.attemptsTo(Click.on('#submit'));
+    await actor.attemptsTo(
+      Type.into('#firstName', 'NoPhone'),
+      Type.into('#lastName', 'Test'),
+      Click.on('input[name="gender"][value="Female"] + label'),
+      Click.on('#submit'),
+    );
 
     const modalVisible = await actor.asks(Visibility.of('.modal-content'));
     expect(modalVisible).toBe(false);
 
+    // page.evaluate() is used here for DOM inspection — no Screenplay interaction involved
+    const page = actor.abilityTo(BrowseTheWeb).getPage();
     const isInvalid = await page.locator('#userNumber').evaluate(
       el => el.classList.contains('field-error') || el.classList.contains('is-invalid') || el.getAttribute('required') !== null
     );

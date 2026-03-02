@@ -11,8 +11,6 @@ export class TableRowCount implements Question<number> {
 
   async answeredBy(actor: Actor): Promise<number> {
     const page = actor.abilityTo(BrowseTheWeb).getPage();
-    return page.locator(`${this.tableSelector} .rt-tr-group`).filter({
-      hasNot: page.locator('.-padRow'),
-    }).count();
+    return page.locator(`${this.tableSelector} tbody tr`).count();
   }
 }
