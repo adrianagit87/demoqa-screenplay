@@ -35,7 +35,7 @@ demoqa-screenplay/
 │   ├── abilities/      # BrowseTheWeb — envuelve Playwright Page
 │   ├── interactions/   # Acciones atómicas de UI (Click, Type, Navigate, …)
 │   ├── questions/      # Lectura del estado de la UI (Text, Visibility, IsChecked, …)
-│   └── tasks/          # Tareas de negocio de alto nivel (FillPracticeForm, AddTableRecord, …)
+│   └── tasks/          # Tareas de negocio de alto nivel — ver tabla completa abajo
 ├── fixtures/
 │   └── actor.fixture.ts  # Playwright test.extend — inyecta el Actor en cada test
 ├── test-data/
@@ -60,6 +60,46 @@ demoqa-screenplay/
 | **Interaction** | `Interaction` | Un paso atómico de UI (`Click`, `Type`, `Navigate`) |
 | **Task** | `Task` | Una secuencia de interacciones que forma una acción de negocio |
 | **Question** | `Question<T>` | Lee el estado de la UI sin efectos secundarios |
+
+---
+
+## Interactions disponibles
+
+| Interaction | DSL | Descripción |
+|---|---|---|
+| `Navigate` | `Navigate.to('/ruta')` | Navega a una URL relativa a la baseURL |
+| `Click` | `Click.on('#selector')` | Click estándar con checks de accionabilidad |
+| `Click` (forzado) | `Click.forced('#selector')` | Bypasea checks — útil cuando un overlay cubre el elemento |
+| `Type` | `Type.into('#selector', 'texto')` | Rellena un input con `.fill()` |
+| `Check` | `Check.on('#selector')` | Marca un checkbox |
+| `Select` | `Select.option('valor').from('#selector')` | Selecciona opción de un `<select>` nativo |
+| `DragTo` | `DragTo.element('#src').onto('#target')` | Arrastra un elemento sobre otro |
+| `AcceptAlert` | `AcceptAlert.confirm()` / `.dismiss()` | Acepta o descarta un diálogo del navegador |
+| `WaitFor` | `WaitFor.visibility('#selector')` | Espera a que un elemento sea visible |
+
+## Tasks disponibles
+
+| Task | DSL | Descripción |
+|---|---|---|
+| `FillTextBox` | `FillTextBox.with(data)` | Rellena el formulario Text Box |
+| `FillPracticeForm` | `FillPracticeForm.with(data)` | Rellena el formulario de práctica completo (campos opcionales incluidos) |
+| `FillDatePicker` | `FillDatePicker.in('#selector').withDate('15 Jan 1995')` | Introduce una fecha en un input date picker |
+| `FillDropdown` | `FillDropdown.select('opción').from('#selector')` | Selecciona una opción de un dropdown React-Select |
+| `AddTableRecord` | `AddTableRecord.with(record)` | Abre el modal y añade una fila nueva a la tabla |
+| `EditTableRecord` | `EditTableRecord.inRowContaining('texto').update('fieldId', 'valor')` | Edita un campo de la fila que contiene el texto indicado |
+| `DeleteTableRecord` | `DeleteTableRecord.inRowContaining('texto')` | Elimina la fila que contiene el texto indicado |
+| `ExpandTreeNode` | `ExpandTreeNode.root()` | Expande el nodo raíz del árbol rc-tree y espera la animación |
+| `CheckTreeNode` | `CheckTreeNode.named('Documents')` | Marca el checkbox del nodo con ese nombre |
+
+## Questions disponibles
+
+| Question | DSL | Retorna |
+|---|---|---|
+| `Visibility` | `Visibility.of('#selector')` | `boolean` — si el elemento es visible |
+| `Text` | `Text.of('#selector')` | `string` — texto del elemento |
+| `Value` | `Value.of('#selector')` | `string` — valor de un input |
+| `IsChecked` | `IsChecked.for('#selector')` | `boolean` — si un checkbox está marcado |
+| `TableRowCount` | `TableRowCount.in('table')` | `number` — filas en el `tbody` de la tabla |
 
 ---
 
